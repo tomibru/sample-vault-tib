@@ -45,3 +45,5 @@ testUtils.createTestButton("Test Login - Usuario Incorrecto (Juan y 12345)", asy
         testUtils.setSuccess(btn);
     }
 });
+
+testUtils.createTestButton("Test Subir Sample - Error por Datos Faltantes")
