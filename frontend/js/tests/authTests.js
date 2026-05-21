@@ -86,3 +86,65 @@ testUtils.createTestButton("Test seguridad - Productor accediendo a admin", asyn
 
 });
 
+testUtils.createTestButton("Test Eliminar Sample Dinámico", async(btn) =>{
+    const loginResponse = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {'Content-Type' : 'application/json'},
+        body: JSON.stringify({username: 'pepe', password: '12345'})
+    });
+    const loginData = await loginResponse.json();
+    const token = loginData.token;
+
+    const listResponse = await fetch('/api/samples/my-samples',{
+        method: 'GET',
+        headers: {'Authorization': 'Bearer '+ token}
+    });
+
+    const samples = await listResponse.json();
+
+    if (samples.length === 0){
+        testUtils.log("No hay samples, subi uno primero")
+    }else{
+        const targetId = samples[0].id;
+        testUtils.log("Borrando sample con id: " + targetId);
+
+        const deleteResponse = await fetch('/api/samples/' + targetId,{
+            method: 'DELETE',
+            headers: {'Authorization' : 'Bearer ' + token}    
+        });
+
+        if(deleteResponse.ok){
+            testUtils.setSuccess(btn);
+        }
+    }
+
+});
+
+testUtils.createTestButton("Test Subir Sample - Error por Datos Faltantes" , async(btn) => {
+    const loginResponse = await fetch('/api/auth/login',{
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({username: 'pepe', password : '12345'})
+    });
+
+    const loginData = await loginResponse.json();
+    const token = loginData.token;
+
+    const formData = new FormData();
+    const blob = new Blob(['Audio falso'], { type : 'audio/wav' });
+    formData.append('display_name' , 'Mi sample');
+    formData.append('audioFile',blob,'test.wav');
+
+    const listResponse = await fetch('/api/samples/upload',{
+        method: 'POST',
+        headers: {'Authorization' : 'Bearer ' + token},
+        body: formData
+    });
+
+    const responseData = await listResponse.json();
+    testUtils.log(responseData);
+
+    if(listResponse.status == 400){
+        testUtils.setSuccess(btn);
+    }
+});
